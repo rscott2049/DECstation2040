@@ -1,6 +1,6 @@
-#DECstation 2040
+# DECstation 2040
 
-##1.0) Introduction
+## 1.0 Introduction
 
 This document outlines the DECstation 2040, a RP2040 based DECstation 3000
 emulator that can run DECWindows. A summary of features:
@@ -20,9 +20,9 @@ Software:
 - PIO driven VGA, with seperate 16x16 cursor plane overlay
 - USB HID to DECWindows keyboard and mouse
   
-##1.1) Software 
+## 1.1 Software 
 
-###PIO:
+### PIO:
 The PSRAM/HyperRAM PIO engine provides 42/32 MB/s (write/read) of memory
 bandwidth. Further, four PIO engines are used to provide four seperate
 read/write memory ports. This allows independent memory access for
@@ -36,7 +36,7 @@ as this matches the screen used for development and the pixel rate
 is an integral divisor from sysclk. Only five PIO instruction slots are
 used.
 
-###DMA:
+### DMA:
 To drive the video PIO engine, five DMA channels are used. They are allocated
 as follows:
 
@@ -46,41 +46,42 @@ as follows:
 - inc_dma_chan - used to generate loop counter indices
 - cur_inc_dma_chan - used as cursor loop counter
 
-We use the RP2040 DMA sniffer to dynamically generate PSRAM addresses. This
-eliminates the need to have a per-line PSRAM command packet. Further,
-we use the inc_dma_chan to enable DMA command loops, so the we can
-further eliminate per-line DMA commands needed to send commands to
-the PIO pixel and PSRAM PIO engines. This makes the amount of memory
-needed to drive video independent of the display format. Currently,
-86 DMA command packets are used vs. approximately 2250 required for 1080p.
+This project uses the RP2040 DMA sniffer to dynamically generate PSRAM
+addresses, which eliminates the need to have a per-line PSRAM command packet. 
+Further, it uses the inc_dma_chan to enable DMA command loops, eliminating
+per-line DMA commands needed to send commands to the PIO pixel and PSRAM
+PIO engines. This makes the amount of memory needed to drive video
+independent of the display format. Currently, 86 DMA command packets are
+used vs. approximately 2250 required for 1080p if a per-line DMA structure
+was used.
 
 In order to eliminate the latency from when the PSRAM PIO engine FIFO
-has read data, and it's delivery to SRAM, we use the ps_read_chan. This
+has read data, and its delivery to SRAM, we use the ps_read_chan. This
 channel is chained to after a PSRAM DMA command is executed. Without
 this channel, the PSRAM PIO engine FIFO would be not be emptied until
 the next DMA command is executed. This impacts the non-video PSRAM
 channels, as they must wait unitl the video PSRAM command is complete.
 
-###USB:
+### USB:
 The USB HID code supports (at least) two keyboard/mouse combo types:
 Rii mini X1 (model: RT-MWK01), purchased at MicroCenter, and Logitech
 K830. 
 
-###Emulator:
+### Emulator:
 Dmitry's code at http://dmitry.gr/?r=05.Projects&proj=33.%20LinuxCard was
 modified to support the RP2040, as well as adding support for video and USB
 mouse/keyboard input. With overclocking and running the assembly language
 version of the CPU emulator, Dmitry's Linux image reports a BOGOMIPS rating
 of 13.44.
 
-#2.0) Getting started
+# 2.0) Getting started
 
-##2.1) Hardware
+## 2.1) Hardware
 Build either rev 1.5 or 2.1, using the appropriate emu_brd directory. Please
 note that rev 2.1 is still undergoing Ethernet debug, and has exhibited
 significant packet drops. I use JLCPCB for board fabrication, and there are 
 Digikey BOM spreadsheets in doc/bom. Recommend building two boards: one to
-use as a 1.8v CMSIS debugger, and the other as the target. Feel free only
+use as a 1.8v CMSIS debugger, and the other as the target. Feel free to only
 populate the RP2040 related components on the CMSIS debugger.
 
 
@@ -109,7 +110,7 @@ To make this modification, cut the existing connection between LAN8722 pin
 of 1.8v I/O from the DECstation 2040 board. Also needed is a 6 pin header
 to VGA connector. See rev 2.1 schematic for VGA pins needed.
 
-##2.2) Software
+## 2.2) Software
 Start with:
 http://dmitry.gr/?r=05.Projects&proj=33.%20LinuxCard
 Download the images, particularly the ultrix.gui image. This should be placed
@@ -184,7 +185,7 @@ If you wish to run from flash, comment out the no_flash line in the source CMake
 when running from flash.
 
 
-#3.0) Commentary
+# 3.0) Commentary
 
 This project has been a voyage of discovery. The first doc/build_log.txt entry
 was on 23-mar-2023, but I'd been thinking of building a business card
@@ -214,13 +215,13 @@ rev 2.0, after submitting PCB. Related - the PSRAM was out of stock, so
 clicked on the recommended alternative. Was disappointed when the box
 showed up, and it was the waferscale part. Tiny, but unsolderable.
 
-#4.0) Next steps
+# 4.0) Next steps
 - Use the ps_get_buf DMA subroutine to setup the cursor PSRAM command. This
 will reduce the memory footprint.
 - Write the lance Ethernet emulation code for uMIPS.
 - Port MicroMac https://axio.ms/projects/2024/06/16/MicroMac.html
 
-#5.0) Acknowledgements
+# 5.0) Acknowledgements
 
 This project would not exist without Dmitry's excellent LinuxCard project,
 at: http://dmitry.gr/?r=05.Projects&proj=33.%20LinuxCard
@@ -242,14 +243,14 @@ confidence that I could actually do this project!
 A selection of pictures from doc/photos follows. See doc/photos for pictures
 of previous versions and how the emulated video output progressed from first
 pixel to current.
-###Video showing [Xmaze/worms](https://youtu.be/O6Lyjsey6ek) running
-###![Rev 1.5](doc/photos/PXL_20240622_180827183.jpg)
+### Video showing [Xmaze/worms](https://youtu.be/O6Lyjsey6ek) running
+### ![Rev 1.5](doc/photos/PXL_20240622_180827183.jpg)
 Rev 1.5
-###![Rev 1.5](doc/photos/PXL_20240629_191452477.MP_exported_2450.jpg)
+### ![Rev 1.5](doc/photos/PXL_20240629_191452477.MP_exported_2450.jpg)
 Rev 1.5 running
-###![Rev 2.1](doc/photos/PXL_20240622_180952507.jpg)
+### ![Rev 2.1](doc/photos/PXL_20240622_180952507.jpg)
 Rev 2.1
-###![Rev 2.1](doc/photos/PXL_20240629_191452477.MP_exported_2450.jpg)
+### ![Rev 2.1](doc/photos/PXL_20240629_191452477.MP_exported_2450.jpg)
 Rev 2.1 running
-###![Helper cat in the parts box](doc/photos/PXL_20240621_225529491.jpg)
+### ![Helper cat in the parts box](doc/photos/PXL_20240621_225529491.jpg)
 Helper cat in the parts box

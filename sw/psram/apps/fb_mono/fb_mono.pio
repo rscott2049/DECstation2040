@@ -1,0 +1,35 @@
+
+.program fb_sync
+; Generate syncs and signal video out state machine
+; Pin mapping:
+; out pins are mapped to H/V sync
+; set pin is mapped to vga green
+;
+; Burn one pixel to execute output commands
+; Two pixels minimum time (wait == 0)
+start:
+       out EXEC, 16       ; Two clks to do video sm req or clear video out
+       out PINS, 2        ; Do syncs
+       out Y, 14          ; Get wait time
+pwait:
+       jmp Y--, pwait [3] ; Do wait time in pixels (4 clk/pixel)
+
+.program fb_video
+; Generate 1 bpp video out
+; Pin mapping:
+; out pin is mapped to pixel output
+;
+; Note have to change active pixel counts below, depending on format
+start:
+      mov PINS, NULL	  ; Turn off video output
+PUBLIC set_active:
+      set X, 31           ; Set active pixels/32 for 1024 active
+      wait 1 IRQ 5        ; Wait until signalled
+pixoutL:
+     nop 
+pixoutS:
+     pull ifempty         ; Get pixels into shift register, when empty
+     out PINS, 1          ; Output a pixel
+     jmp !OSRE, pixoutL   ; Loop until shift count exhausted
+     jmp X--, pixoutS     ; Next group of 32 pixels
+

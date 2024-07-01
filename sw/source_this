@@ -1,0 +1,3 @@
+# Setup pico sdk path
+# Must source this file to affect current shell
+export PICO_SDK_PATH=/home/rscott/misc/hw/raspi/pico/sw/pico/pico-sdk

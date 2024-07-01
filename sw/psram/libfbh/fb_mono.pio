@@ -1,0 +1,54 @@
+.program fb_video
+; Generate 1 bpp video
+; side set and out pin is mapped to vga green
+; set pins are mapped to H/V sync
+;
+; Command format:
+; <15:0> - parameter or number of instructions to wait, minus 4 for overhead
+; <31:16> - PIO SM instruction to execute
+;
+; Writing sync pins is done via passed in instruction.
+; Pixel ouput is done when passed in instruction jumps to pixel out.
+; Passed in delays are done when passed in instruction is not a jump.
+; 
+; We use two instructions to output one pixel, so max pixel out rate
+; is sysclk/2.
+;
+; When parameter is wait time, this is in units of pixels * 2
+; When parameter is pixel count, this is number of pixels to transmit
+;
+; Four instructions for command parsing (including passed in instruction).
+; Two instructions per pixel out.
+;
+; Note that we must keep track of clocks to ensure correct video timing.
+; The rules are:
+; 1) When generating delays, there is a four clock overhead (i.e. 2 pixels)
+; 2) When generating pixel delays, multiply pixels by two to get clocks
+; 3) Active pixels are generated one clock later than sync assertions
+; 4) There is a three clock overhead for pixel output
+;
+; So:
+;   pixel delay = (desired delay - 2) * 2
+; (Thus, minimum pixel delay is two pixels)
+; We steal three clocks from back/front porch to compensate for vid out overhead
+;   Active pixel back porch delay = (pixel delay) - 1
+;   Active pixel front porch delay = (pixel delay) - 2
+; where pixel delay is calculated as above
+;
+; Side set drives the video output pin for blanking
+.side_set 1 opt
+
+PUBLIC vidout:
+     out PINS, 1                ; Output a pixel
+     jmp X--, vidout            ; Do until count exhausted, then get next cmd
+                                ; Usually, count is modulo 32. If not,
+				; recommend placing a pull to realign the
+				; FIFO in the command stream.
+.wrap_target
+PUBLIC start:
+     out X, 16        side 0b0  ; Get loop count, blank output
+     out EXEC, 16               ; Two clks to execute passed in instruction
+fb_wait:
+     jmp X--, fb_wait           ; Do wait
+.wrap
+

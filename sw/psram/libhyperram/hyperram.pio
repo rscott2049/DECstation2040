@@ -1,0 +1,68 @@
+.program hyperram
+
+; HyperRAM interface. 
+; Pin mapping:
+; - in/out pins are mapped to DQx
+; - sideset pin is mapped to {CK}
+; - set pins are mapped to RWDS (msb), CSn (lsb)
+; - jmp pin mapped to RWDS
+
+; Make side sets optional to enable pin sharing with other SMs
+.side_set 1 opt
+
+; Final: 300 MHz, clkdiv = 1, lat = 3;
+.define public LATENCY 4
+.define public LAT_SHORT 1
+
+public start:
+     set X, 0                            ; Flag for no work
+     wait 1 irq 4 rel                    ; Wait for time slice
+     pull noblock                        ; Peek into FIFO
+     out X, 8                            ; Set length for CMD/ADR phase     
+     jmp !X, passOn                      ; No work, poll again
+
+     set PINS, 0b00       side 0b0       ; Enable chip select
+     set PINDIRS, 0b01    side 0b0 [1]   ; Make RWDS pin input, CS output
+     out PINDIRS, 8       side 0b0       ; Set CMD/Data pins direction
+     set Y, LATENCY       side 0b0       ; Assume maximum latency     
+     jmp PIN, setup       side 0b0       ; Skip if RWDS set for max latency
+     set Y, LAT_SHORT     side 0b0       ; Short latency
+setup:
+adr:
+     out PINS, 8          side 0b0 [4]   ; Setup write of cmd/adr
+     nop                  side 0b1       ; CA phase 0 write
+     out PINS, 8          side 0b1 [4] 
+     jmp X--, adr         side 0b0       ; CA phase 1 write
+
+     out X, 16            side 0b0 [4]   ; Get transfer len
+     out PINDIRS, 8       side 0b1       ; Set xfer pin dir
+     out PC, 8            side 0b1 [4]   ; Jump to command [start, r/w_lat]
+
+; For last tick sample 
+public r_lat:
+lat_cnt:
+     nop                  side 0b0 [5]   ; Wait for latency to expire
+     jmp Y--, lat_cnt     side 0b1 [5]
+
+public r_data:
+;     in PINS, 8           side 0b0 [5]    ; CA phase 0 
+     in PINS, 8           side 0b0 [6]    ; CA phase 0 
+     in PINS, 8           side 0b0        ; CA phase 1
+     jmp X--, r_data      side 0b1 [5]    ; Continue until all data captured 
+     jmp done             side 0b0
+
+w_lat_cnt:
+     set PINDIRS, 0b11    side 0b0 [5]    ; Make RWDS pin output 
+public w_lat:
+     jmp Y--, w_lat_cnt   side 0b1 [5]
+
+public w_data:
+     out PINS, 8          side 0b0 [4]    ; Setup write of cmd/adr
+     nop                  side 0b1        ; CA phase 0 write, setup RWDS ph 1
+     out PINS, 8          side 0b1 [4] 
+     jmp X--, w_data      side 0b0        ; CA phase 1 write
+
+done:
+     set PINS, 0b01       side 0b0        ; Deselect part, idle clock
+public passOn:
+     irq nowait 5 rel                     ; Set next SM irq bit

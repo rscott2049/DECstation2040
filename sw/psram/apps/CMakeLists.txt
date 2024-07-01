@@ -1,0 +1,7 @@
+add_subdirectory(mem_test)
+add_subdirectory(picoprobe)
+add_subdirectory(pico-rv32ima)
+add_subdirectory(linuxcard)
+add_subdirectory(fb_test)
+add_subdirectory(fb_mem_test)
+add_subdirectory(command_line)

@@ -1,0 +1,3 @@
+[submodule "sw/psram/apps/pico-rv32ima"]
+	path = sw/psram/apps/pico-rv32ima
+	url = https://github.com/tvlad1234/pico-rv32ima.git

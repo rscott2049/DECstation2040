@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name "RP2040_minimal")(type "KiCad")(uri "${KIPRJMOD}/emu_brd.pretty")(options "")(descr ""))
+  (lib (name "emu_brd")(type "KiCad")(uri "${KIPRJMOD}/emu_brd.pretty")(options "")(descr ""))
+)

@@ -1,0 +1,12 @@
+
+# Select different boot_stage2 file
+#set(PICO_DEFAULT_BOOT_STAGE2_FILE $ENV{PICO_SDK_PATH}/src/rp2_common/boot_stage2/boot2_usb_blinky.S)
+#set(PICO_DEFAULT_BOOT_STAGE2_FILE $ENV{PWD}/boot_stage2/boot2_usb_blinky.S)
+set(PICO_DEFAULT_BOOT_STAGE2_FILE $ENV{PWD}/boot_stage2/boot2_w25q080_mod.S)
+#set(PICO_DEFAULT_BOOT_STAGE2_FILE $ENV{PWD}/boot_stage2/boot2_generic_03h.S)
+#set(PICO_DEFAULT_BOOT_STAGE2_FILE $ENV{PWD}/boot_stage2/boot2_generic_03h_mod.S)
+#set(PICO_DEFAULT_BOOT_STAGE2_FILE $ENV{PWD}/boot_stage2/boot2_w25x10cl.S)
+#set(PICO_DEFAULT_BOOT_STAGE2_FILE $ENV{PWD}/boot_stage2/boot2_w25x10cl_mod.S)
+#pico_define_boot_stage2(boot2_mod ${PICO_DEFAULT_BOOT_STAGE2_FILE})
+target_compile_definitions(boot2_mod PRIVATE PICO_FLASH_SPI_CLKDIV=4)
+pico_set_boot_stage2(blink boot2_mod)

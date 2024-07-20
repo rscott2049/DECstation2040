@@ -250,7 +250,7 @@ Rev 1.5
 Rev 1.5 running
 ### ![Rev 2.1](doc/photos/PXL_20240622_180952507.jpg)
 Rev 2.1
-### ![Rev 2.1](doc/photos/PXL_20240629_191452477.MP_exported_2450.jpg)
-Rev 2.1 running
+### ![Rev 2.1](doc/photos/PXL_20240720_172800102.jpg)
+Rev 2.1 running with Logitech keyboard
 ### ![Helper cat in the parts box](doc/photos/PXL_20240621_225529491.jpg)
 Helper cat in the parts box
